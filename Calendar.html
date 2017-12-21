@@ -105,6 +105,11 @@
 			// 반복 여부에 따라 주기 SelectBox Enable/Disable 설정
 			$('#repeatVal').attr("disabled", $(this).val() == "Y" ? false : true);
 		});
+		
+		$('#allDay').change(function(){
+			$('#ed').attr("disabled", $(this).val() == "N" ? false : true);
+			$('#edt').attr("disabled", $(this).val() == "N" ? false : true);
+		});
 	});
 
 	function removeEvent() {
@@ -124,49 +129,33 @@
 	function addEvent() {
 		var to_day = fn_getToDay();
 		dialog.dialog( "open" );
-		 
-//		var eventData;
-//			eventData = {
-//				title: "sTitle11",
-//				start: "ssd + ssdt"
-//			};
-//	$(eventData).extend({end:"end"});
-//			
-////			
-////		var temparr = [];
-////		temparr.push({"name":"end", value:new Date().getTime()})
-////		for ( var prefix in eventData ) {
-////			temparr.push({"name":prefix, value:eventData[prefix]})
-////		}
-//					
-//			console.dir(eventData);
 	}
 
 	function addUser() {
-//		var html = [];
-//		
-//		var sTitle	= $("#title").val();		
-//		var sAllDay	= $("#allDay").val();
-//		var ssd			= $("#sd").val();
-//		var ssdt		= $("#sdt").val();
-//		var sed			= $("#ed").val();
-//		var sedt		= $("#edt").val();		
-//		var surl		= $("#url").val();		
-//
-//		var eventData;
-//		if (sTitle) {
-//			eventData = {
-//				title: sTitle,
-//				allDay: (sAllDay == "Y") ? true : false,
-//				start: ssd + " " + ssdt
-//			};
-//			if (sAllDay == "N") {
-//				eventData
-//			}
-//			$('#calendar').fullCalendar('renderEvent', eventData, true); // stick? = true
-//			console.dir(eventData);
-//		}
-//		$('#calendar').fullCalendar('unselect');
+		var html = [];
+		
+		var sTitle	= $("#title").val();		
+		var sAllDay	= $("#allDay").val();
+		var ssd			= $("#sd").val();
+		var ssdt		= $("#sdt").val();
+		var sed			= $("#ed").val();
+		var sedt		= $("#edt").val();		
+		var surl		= $("#url").val();		
+
+		var eventData;
+		if (sTitle) {
+			eventData = {
+				title: sTitle,
+				allDay: (sAllDay == "Y") ? true : false,
+				start: ssd + " " + ssdt
+			};
+			if (sAllDay == "N") {
+				eventData.end = sed + " " + sedt;
+			}
+			$('#calendar').fullCalendar('renderEvent', eventData, true); // stick? = true
+			console.dir(eventData);
+		}
+		$('#calendar').fullCalendar('unselect');
 	}
 </script>
 
