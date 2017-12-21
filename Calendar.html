@@ -85,9 +85,9 @@
 			modal: true,
 			buttons: {
 				"이벤트 등록": addUser,
-				Cancel: function() {dialog.dialog( "close" );}
+				"닫기": function() {dialog.dialog( "close" );}
 			},
-      close: function() {
+    		  close: function() {
 				form[ 0 ].reset();
 				allFields.removeClass( "ui-state-error" );
 			}
@@ -100,23 +100,21 @@
 
 		// Calendar Initialize
 		$('#calendar').fullCalendar(calOption);
-
-		//addEvent();
-//				var d = new Date();
-//				var p = 60 - d.getMinutes();
-//				if (p > 30) p = p - 30;
-//				d.setMinutes(d.getMinutes() + p)
-//				console.log (d);		
+		
+		$('#repeat').change(function(){
+			// 반복 여부에 따라 주기 SelectBox Enable/Disable 설정
+			$('#repeatVal').attr("disabled", $(this).val() == "Y" ? false : true);
+		});
 	});
 
 	function removeEvent() {
 		var array = $('#calendar').fullCalendar('clientEvents');
-    for(i in array){
-        if(array[i].overlap != false){
-					$('#calendar').fullCalendar('removeEvents', array[i]._id)
-        }
-    }
-    return false;
+    	for(i in array){
+        	if(array[i].overlap != false){
+				$('#calendar').fullCalendar('removeEvents', array[i]._id)
+        	}
+    	}
+    	return false;
 	}
 
 	function listEvent() {
@@ -125,22 +123,52 @@
 
 	function addEvent() {
 		var to_day = fn_getToDay();
-		 dialog.dialog( "open" );
+		dialog.dialog( "open" );
+		 
+//		var eventData;
+//			eventData = {
+//				title: "sTitle11",
+//				start: "ssd + ssdt"
+//			};
+//	$(eventData).extend({end:"end"});
+//			
+////			
+////		var temparr = [];
+////		temparr.push({"name":"end", value:new Date().getTime()})
+////		for ( var prefix in eventData ) {
+////			temparr.push({"name":prefix, value:eventData[prefix]})
+////		}
+//					
+//			console.dir(eventData);
 	}
 
 	function addUser() {
-		var sTitle = $("#title").val();
-		var sAllDay = $("#allDay").val();
-		var ssd = $("#title").val();
-		var sTitle = $("#title").val();
-		var sTitle = $("#title").val();		
-		var sTitle = $("#title").val();
-		
-		console.log("이벤트 등록");
+//		var html = [];
+//		
+//		var sTitle	= $("#title").val();		
+//		var sAllDay	= $("#allDay").val();
+//		var ssd			= $("#sd").val();
+//		var ssdt		= $("#sdt").val();
+//		var sed			= $("#ed").val();
+//		var sedt		= $("#edt").val();		
+//		var surl		= $("#url").val();		
+//
+//		var eventData;
+//		if (sTitle) {
+//			eventData = {
+//				title: sTitle,
+//				allDay: (sAllDay == "Y") ? true : false,
+//				start: ssd + " " + ssdt
+//			};
+//			if (sAllDay == "N") {
+//				eventData
+//			}
+//			$('#calendar').fullCalendar('renderEvent', eventData, true); // stick? = true
+//			console.dir(eventData);
+//		}
+//		$('#calendar').fullCalendar('unselect');
 	}
-
 </script>
-
 
 </head>
 <body>
@@ -181,7 +209,7 @@
 			<Td><label for="repeat">반복</label></Td>
 			<td>
 				<select id='repeat' class='wid85'></select>
-				<select id='repeatVal' class='sel_date'></select>
+				<select id='repeatVal' class='sel_date' disabled></select>
 			</td>
 		</Tr>
 		<Tr>
