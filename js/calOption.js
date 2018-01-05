@@ -28,127 +28,56 @@
 	height: $(window).height()-20,
 	minTime:"04:00:00",
 	allDayText:'종일',
-//	select: function(start, end, jsEvent, resource) {
-//		console.log ("start : " + start.format('mm'));
-//		console.log ("end : " + end);
-//		console.dir (jsEvent.target.classList);
-////        if (jsEvent.target.classList.contains('fc-highlight') || jsEvent.target.classList.contains('fc-bgevent')) {
-////            alert('Click Background Event Area');
-////        }
-////				var title = prompt('Event Title:');
-////				var eventData;
-////				if (title) {
-////					eventData = {
-////						title: title,
-////						start: start,
-////						end: end
-////					};
-////					$('#calendar').fullCalendar('renderEvent', eventData, true); // stick? = true
-////				}
-////				$('#calendar').fullCalendar('unselect');
-//	},
+
+	// 이벤트 등록
 	dayClick: function(date, jsEvent, view) {
-		$('#sd').val(date.format('YYYY-MM-DD'))
-		$('#ed').val(date.format('YYYY-MM-DD'))
-
-		// 시간 계산
-		var d = new Date();
-		var p = 60 - d.getMinutes();
-		if (p > 30) p = p - 30;
-		d.setMinutes(d.getMinutes() + p);
-
-		var cHour = d.getHours() - 1;
-		if (cHour < 10) cHour = "0" + cHour;
-		var cMin = d.getMinutes();
-		if (cMin == 0) cMin = "0" + cMin;
-
-		var cTime = cHour + ":" + cMin;
-
-		$("#sdt").val(cTime);
-		$("#edt").val(cTime);
-
-		addEvent();
+		addEvent(date._d);
 	},
+	
+	// 이벤트 선택
+	eventClick:
+		function(calEvent, jsEvent, view) {
+			editEvent(calEvent, jsEvent, view);
+		},
 
-	events: [
-//		{
-//			title: 'All Day Event',
-//			start: '2017-11-01',
-//		},
-//		{
-//			title: 'Long Event',
-//			start: '2017-11-08',
-//			end: '2017-11-10'
-//		},
-//		{
-//			title: 'Meeting',
-//			start: '2017-11-13T11:00:00',
-//			constraint: 'availableForMeeting', // defined below
-//			color: '#257e4a'
-//		},
-//		{
-//			id: 999,
-//			title: 'Repeating Event',
-//			//constraint: 'availa', // defined below
-//			start: '2017-11-09T16:00:00',
-//			color: '#357e12'
-//		},
-//		{
-//			id: 999,
-//			title: 'Repeating Event',
-//			start: '2017-11-16T16:00:00'
-//		},
-//		{
-//			title: 'Conference',
-//			start: '2017-11-11',
-//			end: '2017-11-13'
-//		},
-//		{
-//			title: 'Meeting',
-//			start: '2017-11-12T10:30:00',
-//			end: '2017-11-12T12:30:00'
-//		},
-//		{
-//			title: 'Lunch',
-//			start: '2017-11-12T12:00:00'
-//		},
-//		{
-//			title: 'Meeting',
-//			start: '2017-11-12T14:30:00'
-//		},
-//		{
-//			title: 'Happy Hour',
-//			start: '2017-11-12T17:30:00'
-//		},
-//		{
-//			title: 'Dinner',
-//			start: '2017-11-12T20:00:00'
-//		},
-//		{
-//			title: 'Birthday Party',
-//			start: '2017-11-13T07:00:00'
-//		},
-//		{
-//			title: 'Click for Google',
-//			url: 'http://google.com/',
-//			start: '2017-11-28'
-//		},
+	// 이벤트 이동		
+	eventDrop: function(calEvent, delta, revertFunc) {
+		if (!confirm("Are you sure about this change?")) {
+			revertFunc();
+		} else {
+			console.dir(calEvent);
+		}
+	},
+	
+	// 이벤트 일정 조정
+	eventResize: function(event, delta, revertFunc) {
+		alert(event.title + " end is now " + event.end.format());
+		if (!confirm("is this okay?")) {
+			revertFunc();
+		}
+	},
+	
+	events: function(start, end, timezone, callback) {
+		fn_getEvent(start, end, timezone, callback);
+	}
+	
+//	events: [
 
 		// red areas where no events can be dropped
-		{
-			title: '추석',
-			start: '2017-11-24',
-			end: '2017-11-28',
-			overlap: false,
-			rendering: 'background',
-			color: '#ff9f89'
-		},
-		{
-			start: '2017-11-06',
-			end: '2017-11-08',
-			overlap: false,
-			rendering: 'background',
-			color: '#ff9f89'
-		}
-	]
+//		{
+//			title: '추석',
+//			start: '2017-11-24',
+//			end: '2017-11-28',
+//			overlap: false,
+//			rendering: 'background',
+//			color: '#ff9f89'
+//		},
+//		{
+//			start: '2017-11-06',
+//			end: '2017-11-08',
+//			overlap: false,
+//			rendering: 'background',
+//			color: '#ff9f89'
+//		}
+//	]
 };

@@ -1,4 +1,7 @@
-﻿Date.prototype.format30 = function(f) {
+﻿var wMode= "";
+var wEvent = "";
+
+Date.prototype.format30 = function(f) {
 	if (!this.valueOf()) return " ";
  
 	var weekName = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"];
@@ -74,14 +77,43 @@ function init_variable() {
 	});	
 }
 
-function fn_getToDay() {
-	var _date		= new Date().format30("yyyy-MM-dd");
+function fn_getToDay(date) {
+	var _date		= date.format30("yyyy-MM-dd");	
 	var _time1	= new Date().format30("HH:mm");
-	var _cTime	= new Date().format30("HH");
-	var _time2	= new Date().format30("HH").add(1) + _time1.substring(2,5);
-	
+	var _time2	= _time1.substring(0,2).add(1) + _time1.substring(2,5);
+		
 	$("#sd").val(_date);
 	$("#ed").val(_date);
 	$("#sdt").val(_time1);
 	$("#edt").val(_time2);
+}
+
+function fn_getEventDay() {
+	$("#title").val(wEvent.title);	
+	$("#sd").val(wEvent.start.format('YYYY-MM-DD'));
+	$("#sdt").val(wEvent.start.format('HH:mm'));
+
+	if(wEvent.allDay) {
+		$("#allDay").val("Y");
+		$("#sdt").val("08:00").attr("disabled", true);
+		$("#edt").val("22:30").attr("disabled", true);
+		$("#ed").val($("#sd").val()).attr("disabled", true);
+	} else {
+		$("#ed").val(wEvent.end.format('YYYY-MM-DD'));
+		$("#edt").val(wEvent.end.format('HH:mm'));
+	}
+}
+
+function fn_alert(calEvent) {
+	var alt = [];
+	
+	alt.push ("일정 : " + calEvent.title);
+	if (calEvent.allDay) {
+		alt.push ("종일 ");
+	} else {
+		alt.push ("시작 : " + calEvent.start.format('YYYY-MM-DD HH:mm'));
+		alt.push ("종료 : " + calEvent.end.format('YYYY-MM-DD HH:mm'));
+	}
+	
+	alert(alt.join("\n"));
 }

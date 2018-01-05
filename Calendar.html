@@ -60,37 +60,64 @@
 <script src='./js/calOption.js'></script>
 <script src='./js/initWork.js'></script>
 
+<script src='./js/IndexedDB.js'></script>
+
 <script>
 	var dialog, form;
-            
+
 	$(window).resize(function() {
 		$('#calendar').fullCalendar('option', 'height',$(window).height() - 20);
 	});
 
 	$(document).ready(function() {
+		IDB.checkDB();
+
 		var name = $( "#name" );
 		var email = $( "#email" );
 		var password = $( "#password" );
 		var urlRegex = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 		var allFields = $( [] ).add( name ).add( email ).add( password );
-		var tips = $( ".validateTips" );		
-				
+		var tips = $( ".validateTips" );
+
 		init_variable();
-		
+
 		// Dialog Initialize
-		dialog = $( "#dialog-form" ).dialog({
+		dialog = $("#dialog-form" ).dialog({
 			autoOpen: false,
 			height: 320,
 			width: 450,
 			modal: true,
-			buttons: {
-				"이벤트 등록": addUser,
-				"닫기": function() {dialog.dialog( "close" );}
+			buttons: [
+				{
+					id : "act_button",
+					text :"이벤트 등록",
+					click : addUsers
+					},
+				{
+					id : "del_button",
+					text :"이벤트 삭제",
+					click : delUsers
+					},
+				{
+					text :"닫기",
+					click : closeDialog
+					}
+			],
+			
+			open: function() {
+				if (wMode == "Add") {
+					$('#act_button').html('이벤트 등록');
+					$('#del_button').hide();
+				} else {
+					$('#act_button').html('이벤트 수정');
+					$('#del_button').show();
+				}
 			},
-    		  close: function() {
-				form[ 0 ].reset();
-				allFields.removeClass( "ui-state-error" );
-			}
+			
+			close: function() {
+					form[ 0 ].reset();
+					allFields.removeClass( "ui-state-error" );
+				}
 		});
 
 		form = dialog.find( "form" ).on( "submit", function( event ) {
@@ -100,15 +127,16 @@
 
 		// Calendar Initialize
 		$('#calendar').fullCalendar(calOption);
-		
+
 		$('#repeat').change(function(){
 			// 반복 여부에 따라 주기 SelectBox Enable/Disable 설정
 			$('#repeatVal').attr("disabled", $(this).val() == "Y" ? false : true);
 		});
-		
+
 		$('#allDay').change(function(){
 			$('#ed').attr("disabled", $(this).val() == "N" ? false : true);
 			$('#edt').attr("disabled", $(this).val() == "N" ? false : true);
+			$('#sdt').attr("disabled", $(this).val() == "N" ? false : true);
 		});
 	});
 
@@ -126,36 +154,144 @@
 		console.dir($('#calendar').fullCalendar('clientEvents'));
 	}
 
-	function addEvent() {
-		var to_day = fn_getToDay();
+	function addEvent(date) {
+		wMode = "Add";
+
+		fn_getToDay(date);
 		dialog.dialog( "open" );
 	}
 
-	function addUser() {
-		var html = [];
-		
-		var sTitle	= $("#title").val();		
-		var sAllDay	= $("#allDay").val();
+	function editEvent(calEvent) {
+		if ($('#calendar').fullCalendar('option', 'editable')) {
+			// 이벤트 수정
+			wMode		= "Edit"
+			wEvent	= calEvent;
+
+			fn_getEventDay();
+			dialog.dialog( "open" );
+		} else {
+			// 이벤트 조회
+			fn_alert(calEvent);
+		}
+	}
+
+	function addUsers() {
+		if (wMode == "Add") {
+			addUser();
+		} else {
+			editUser();
+		}
+	}
+
+	function delUsers() {
+		if(confirm('[' + wEvent.title + '] 이벤트를 삭제합니다.')) {
+			IDB.delete(wEvent.id, function(data){
+				if(data == 1){
+					$('#calendar').fullCalendar( 'removeEvents' , wEvent.id)
+					closeDialog();
+				}
+			});
+		}
+	}
+
+	function closeDialog() {
+		dialog.dialog( "close" );
+	}
+
+	// 입력폼에서 값 읽어오기
+	function fn_getObject() {
+		var rtnObj;
+
+		var sTitle	= $("#title").val();
+		var sAllDay	= $("#allDay").val() == "Y" ? true : false;
 		var ssd			= $("#sd").val();
 		var ssdt		= $("#sdt").val();
 		var sed			= $("#ed").val();
-		var sedt		= $("#edt").val();		
-		var surl		= $("#url").val();		
+		var sedt		= $("#edt").val();
+		var surl		= $("#url").val();
+		var isErr		= false;
 
-		var eventData;
-		if (sTitle) {
-			eventData = {
-				title: sTitle,
-				allDay: (sAllDay == "Y") ? true : false,
-				start: ssd + " " + ssdt
-			};
-			if (sAllDay == "N") {
-				eventData.end = sed + " " + sedt;
-			}
-			$('#calendar').fullCalendar('renderEvent', eventData, true); // stick? = true
-			console.dir(eventData);
+		if (sTitle == "") {
+			alert("제목 누락");
+			isErr = true;
 		}
-		$('#calendar').fullCalendar('unselect');
+
+		rtnObj = {
+			title: sTitle,
+			allDay: sAllDay,
+			start: ssd + " " + ssdt,
+			url : surl,
+			err : isErr
+		};
+
+		if (! sAllDay) {
+			rtnObj.end = sed + " " + sedt;
+		}
+
+		return rtnObj;
+	}
+
+	// 이벤트 수정
+	function editUser() {
+		var obj = fn_getObject();
+
+		// Validation Check
+		if (obj.err) return;
+
+		wEvent.title	= obj.title;
+		wEvent.start	= obj.start;
+		wEvent.allDay	= obj.allDay;
+
+		if (obj.allDay) {
+			wEvent.end = null;
+		} else {
+			wEvent.end = obj.end;
+		}
+
+		IDB.update(wEvent,function(data){
+			if(data == 1){
+			$('#calendar').fullCalendar('updateEvent', wEvent);
+			$('#calendar').fullCalendar('unselect');
+			
+			closeDialog();
+			}
+		});
+
+		closeDialog();
+	}
+
+	// 이벤트 등록
+	function addUser() {
+		var obj = fn_getObject();
+
+		// Validation Check
+		if (obj.err) return;
+
+		var eventData = {
+			title: obj.title,
+			allDay: obj.allDay,
+			start: obj.start
+		};
+		if (! obj.allDay) {
+			eventData.end = obj.end;
+		}
+
+		IDB.insert(eventData,function(data){
+			if(data == 1){
+				$('#calendar').fullCalendar('refetchEvents');
+				$('#calendar').fullCalendar('unselect');
+
+				closeDialog();
+			}
+		});
+	}
+
+	// 이벤트 조회
+	function fn_getEvent(start, end, timezone, callback) {
+		IDB.selectRange(start, end, function(data){
+			// IDB.selectAll(function(data){
+			callback(data);
+		});
 	}
 </script>
 
@@ -163,13 +299,15 @@
 <body>
 	<div id='calendar'></div>
 	<div style='position:absolute;top:10px;left:200px'>
-		<input type=button value='이벤트 등록' onClick='addEvent();'>
-		<input type=button value='이벤트 목록' onClick='listEvent();'>
-		<input type=button value='일정삭제' onClick='removeEvent();'>
+		<input type="checkbox" name="insurance" id="insurance">
+		<input type=button value='등록' onClick='addEvent(new Date());'>
+		<input type=button value='목록' onClick='listEvent();'>
+		<input type=button value='삭제' onClick='removeEvent();'>
+		<input type=button value='로딩' onClick='javascript:location.reload();'>
 	</div>
 
 <div id="dialog-form" title="새 일정" style='display:none'>
-  <form>	
+  <form>
 	<table cellPadding=0 cellSpacing=0 Border=0 width=100%>
 		<colGroup>
 			<col width=60px></col>
@@ -207,7 +345,7 @@
 				<input type="text" id="url" class="text ui-widget-content ui-corner-all wid100">
 			</td>
 		</Tr>
-  </form>      		
+  </form>
 	</table>
 </div>
 </body>
